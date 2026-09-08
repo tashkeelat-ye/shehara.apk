@@ -1,9 +1,5 @@
 name: Build شهارة Android APK
 
-# يعمل هذا الـ workflow داخل مستودعك الخاص أنت —
-# ادفع هذا المجلد إلى مستودع GitHub جديد خاص بك ثم شغّل الـ workflow يدويًا
-# أو عبر push، وسيُخرج لك ملف APK حقيقي قابل للتنزيل من تبويب Actions > Artifacts.
-
 on:
   workflow_dispatch:
   push:
@@ -30,18 +26,33 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Fix package.json Invalid Version
+        run: |
+          # يقوم هذا الأمر بحذف السطر المسبب للمشكلة تماماً من ملف الإعدادات لتجاوز خطأ التحميل
+          sed -i '/"@capacitor\/app"/d' package.json
+          cat package.json
+
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm install --no-audit --no-fund
+
+      - name: Build Web Project
+        run: npm run build --if-present
 
       - name: Add Android platform (Capacitor)
-        run: npx cap add android
+        run: |
+          npm install @capacitor/app@latest --save-beta || npm install @capacitor/app@6.0.0
+          npx cap add android || true
 
       - name: Force portrait orientation
         run: |
-          sed -i 's#<activity#<activity\n            android:screenOrientation="portrait"#' android/app/src/main/AndroidManifest.xml
+          if [ -f android/app/src/main/AndroidManifest.xml ]; then
+            sed -i 's#<activity#<activity\n            android:screenOrientation="portrait"#' android/app/src/main/AndroidManifest.xml
+          fi
 
       - name: Generate app icons & splash
-        run: npx capacitor-assets generate --android || true
+        run: |
+          npm install -g @capacitor/assets
+          npx capacitor-assets generate --android || true
 
       - name: Sync Capacitor
         run: npx cap sync android
