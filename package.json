@@ -2,9 +2,9 @@
   "name": "shehara-android-app",
   "private": true,
   "version": "1.0.0",
-  "description": "تطبيق شهارة لأندرويد (نسخة مستقلة تعتمد على Capacitor) — يعرض https://shehara-ye.vercel.app داخل غلاف Android أصلي.",
+  "description": "تطبيق شهارة لأندرويد (Capacitor - Remote URL) يعرض https://shehara-ye.vercel.app",
   "scripts": {
-    "cap:add:android": "cap add android",
+    "build": "echo 'وضع Remote URL: لا يوجد أصول ويب لبنائها، الموقع يُحمَّل مباشرة عبر server.url في capacitor.config.ts'",
     "cap:sync": "cap sync android",
     "cap:open": "cap open android",
     "assets:generate": "capacitor-assets generate --android",
@@ -12,14 +12,14 @@
     "build:apk:release": "cd android && ./gradlew assembleRelease"
   },
   "dependencies": {
-    "@capacitor/android": "^7.4.0",
-    "@capacitor/app": "^7.4.0",
-    "@capacitor/core": "^7.4.0",
-    "@capacitor/splash-screen": "^7.4.0",
-    "@capacitor/status-bar": "^7.4.0"
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.0",
+    "@capacitor/status-bar": "^7.0.0"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^7.4.0"
+    "@capacitor/cli": "^7.0.0"
   }
 }
