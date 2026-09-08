@@ -1,0 +1,66 @@
+name: Build شهارة Android APK
+
+# يعمل هذا الـ workflow داخل مستودعك الخاص أنت (وليس المستودع الأصلي) —
+# ادفع هذا المجلد إلى مستودع GitHub جديد خاص بك ثم شغّل الـ workflow يدويًا
+# أو عبر push، وسيُخرج لك ملف APK حقيقي قابل للتنزيل من تبويب Actions > Artifacts.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Android platform (Capacitor)
+        run: npx cap add android
+
+      - name: Force portrait orientation
+        run: |
+          sed -i 's#<activity#<activity\n            android:screenOrientation="portrait"#' android/app/src/main/AndroidManifest.xml
+
+      - name: Generate app icons & splash
+        run: npx capacitor-assets generate --android || true
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK
+        run: cd android && ./gradlew assembleDebug --no-daemon
+
+      - name: Compute SHA-256
+        run: |
+          APK=$(find android -name "*.apk" | head -n 1)
+          echo "APK_PATH=$APK" >> $GITHUB_ENV
+          sha256sum "$APK"
+          ls -lh "$APK"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shehara-app-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
